@@ -88,3 +88,11 @@ steps:
     ArtifactName: 'Archisteam'
     publishLocation: 'Container'
 
+- task: CopyFilesOverSSH@0
+  inputs:
+    sshEndpoint: 'SSH'
+    sourceFolder: 'ArchiSteamFarm.zip'
+    contents: '**'
+    targetFolder: 'C:/Users/azureuser'
+    isWindowsOnTarget: true
+    readyTimeout: '20000'
