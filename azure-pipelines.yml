@@ -5,15 +5,85 @@
 
 trigger:
 - main
+- stage
+
+variables:
+- name : System.debug
+  value : true
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: windows-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    projects: 'ArchiSteamFarm.sln'
+    feedsToUse: 'select'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: 'ArchiSteamFarm/ArchiSteamFarm.csproj'
+    arguments: '-c "Release" -f "net6.0" -o "out/generic"'
+
+- task: SonarCloudPrepare@1
+  inputs:
+    SonarCloud: 'Test'
+    organization: 'sahanaumesh'
+    scannerMode: 'MSBuild'
+    projectKey: 'sahanasu93_check'
+    projectName: 'check'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: 'ArchiSteamFarm.sln'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: 'ArchiSteamFarm.Tests/ArchiSteamFarm.Tests.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
+    testRunTitle: 'Test run1'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: 'ArchiSteamFarm.Tests/ArchiSteamFarm.Tests.csproj'
+    arguments: '--configuration $(buildConfiguration) --logger trx --collect "Code coverage'
+    testRunTitle: 'Code coverage'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'VSTest'
+    testResultsFiles: '**/*.trx'
+
+- task: SonarCloudAnalyze@1
+
+- task: SonarCloudPublish@1
+  inputs:
+    pollingTimeoutSec: '300'
+
+- task: CopyFiles@2
+  inputs:
+    Contents: 'out/generic/ArchiSteamFarm.zip'
+    TargetFolder: '$(Build.ArtifactsStagingDirectory)'
+
+- task: CopyFiles@2
+  inputs:
+    Contents: '.scannerwork/*'
+    TargetFolder: '$(Build.ArtifactsStagingDirectory)'
+
+- task: CopyFiles@2
+  inputs:
+    Contents: '.sqanalysis/*'
+    TargetFolder: '$(Build.ArtifactsStagingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'Archisteam'
+    publishLocation: 'Container'
+
