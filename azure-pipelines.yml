@@ -2,21 +2,22 @@
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
-# HELLO
+#hello
 
 trigger:
 - main
 - stage
 
 variables:
-- name : System.debug
-  value : true
+- name: system.debug
+  value: true 
 
 pool:
   vmImage: windows-latest
 
 steps:
 - task: DotNetCoreCLI@2
+  displayName: 'Restore code'
   inputs:
     command: 'restore'
     projects: 'ArchiSteamFarm.sln'
@@ -34,8 +35,9 @@ steps:
     SonarCloud: 'Test'
     organization: 'sahanaumesh'
     scannerMode: 'MSBuild'
-    projectKey: 'sahanasu93_check'
-    projectName: 'check'
+    configMode: 'manual'
+    ProjectKey: 'sahanasu93_check'
+    ProjectName: 'check'
 
 - task: DotNetCoreCLI@2
   inputs:
@@ -47,18 +49,16 @@ steps:
     command: 'test'
     projects: 'ArchiSteamFarm.Tests/ArchiSteamFarm.Tests.csproj'
     arguments: '--configuration $(BuildConfiguration)'
-    testRunTitle: 'Test run1'
 
 - task: DotNetCoreCLI@2
   inputs:
-    command: 'test'
+    command: test
     projects: 'ArchiSteamFarm.Tests/ArchiSteamFarm.Tests.csproj'
-    arguments: '--configuration $(buildConfiguration) --logger trx --collect "Code coverage'
-    testRunTitle: 'Code coverage'
+    arguments: '--configuration $(buildConfiguration) --logger trx --collect "Code coverage"'
 
 - task: PublishTestResults@2
   inputs:
-    testResultsFormat: 'VSTest'
+    testRunner: VSTest
     testResultsFiles: '**/*.trx'
 
 - task: SonarCloudAnalyze@1
@@ -70,28 +70,28 @@ steps:
 - task: CopyFiles@2
   inputs:
     Contents: 'out/generic/ArchiSteamFarm.zip'
-    TargetFolder: '$(Build.ArtifactsStagingDirectory)'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: CopyFiles@2
   inputs:
     Contents: '.scannerwork/*'
-    TargetFolder: '$(Build.ArtifactsStagingDirectory)'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: CopyFiles@2
   inputs:
-    Contents: '.sqanalysis/*'
-    TargetFolder: '$(Build.ArtifactsStagingDirectory)'
+    Contents: '.sqAnalysis/*'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'Archisteam'
+    ArtifactName: 'archi'
     publishLocation: 'Container'
 
 - task: CopyFilesOverSSH@0
   inputs:
     sshEndpoint: 'SSH'
-    sourceFolder: 'ArchiSteamFarm.zip'
+    sourceFolder: 'out/generic/ArchiSteamFarm.zip'
     contents: '**'
     targetFolder: 'C:/Users/azureuser'
     isWindowsOnTarget: true
