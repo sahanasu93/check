@@ -91,7 +91,7 @@ steps:
 - task: CopyFilesOverSSH@0
   inputs:
     sshEndpoint: 'SSH'
-    sourceFolder: 'out/generic/ArchiSteamFarm.zip'
+    sourceFolder: 'out/generic'
     contents: '**'
     targetFolder: 'C:/Users/azureuser'
     isWindowsOnTarget: true
