@@ -39,13 +39,6 @@ steps:
     ProjectKey: 'sahanasu93_check'
     ProjectName: 'check'
 
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-    script: |
-      New-Item -Path '$(Build.ArtifactStagingDirectory)/Sonarcloud' -ItemType Directory
-      New-Item -Path '$(Build.ArtifactStagingDirectory)/Artifact' -ItemType Directory
-
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
@@ -77,34 +70,28 @@ steps:
 - task: CopyFiles@2
   inputs:
     Contents: 'out/generic/ArchiSteamFarm.zip'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/Artifact'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: CopyFiles@2
   inputs:
     Contents: '.scannerwork/*'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/Sonarcloud'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: CopyFiles@2
   inputs:
     Contents: '.sqAnalysis/*'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/Sonarcloud'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/Artifact'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'archi'
-    publishLocation: 'Container'
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/Sonarcloud'
-    ArtifactName: 'Sonar'
     publishLocation: 'Container'
 
 - task: CopyFilesOverSSH@0
   inputs:
     sshEndpoint: 'SSH'
-    sourceFolder: '$(Build.ArtifactStagingDirectory)/Artifact'
+    sourceFolder: 'out/generic'
     contents: '**'
     targetFolder: 'C:/Users/azureuser'
     isWindowsOnTarget: true
